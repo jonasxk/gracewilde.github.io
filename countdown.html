@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landing Page with Countdown</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #1a1a1a; /* Black tone background */
+            text-align: center;
+            color: white;
+        }
+
+        /* Padding before the video */
+        .video-container {
+            width: 100%;
+            max-width: 360px;
+            margin: 40px 0 20px; /* 40px padding before the video */
+        }
+
+        .video-container video {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        /* Text and Buttons container */
+        .content {
+            max-width: 720px;
+            padding: 0 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #ddd;
+        }
+
+        p {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #bbb;
+        }
+
+        .countdown {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #ff4d4d;
+        }
+
+        /* Button base styles */
+        .button {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 10px auto;
+            padding: 15px 0;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Instagram button */
+        .button-instagram {
+            background-color: transparent;
+            color: #fff;
+            border: 2px solid #ff4d4d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .button-instagram img {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+
+        .button-instagram:hover {
+            background-color: #ff4d4d;
+            color: #fff;
+        }
+
+        /* Increase Approval Odds button */
+        .button-outline {
+            background-color: transparent;
+            color: #ff4d4d;
+            border: 2px solid #ff4d4d;
+        }
+
+        .button-outline:hover {
+            background-color: #ff4d4d;
+            color: #fff;
+        }
+
+        /* Skip Approval button */
+        .button-rosa {
+            background-color: #ff69b4; /* Pink/rosa */
+            color: #fff;
+        }
+
+        .button-rosa:hover {
+            background-color: #ff85c9;
+        }
+
+        .small-text {
+            font-size: 12px;
+            color: #888;
+            margin-top: 10px;
+        }
+
+        /* Panel styles */
+        .panel {
+            position: fixed;
+            bottom: -100%; /* Start off screen (below view) */
+            left: 0;
+            width: 100%; /* Panel width */
+            height: 70%; /* Height of the panel */
+            background: #2e2e2e;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: bottom 0.3s ease; /* Smooth slide effect */
+            z-index: 10;
+        }
+
+        .panel.open {
+            bottom: 0; /* Slide in */
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            color: white;
+            font-size: 24px;
+        }
+
+        /* Responsive design for mobile */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 20px;
+            }
+
+            p {
+                font-size: 16px;
+            }
+
+            .countdown {
+                font-size: 18px;
+            }
+
+            .button {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Video Section -->
+    <div class="video-container">
+        <video autoplay muted loop>
+            <source src="testvideo.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <!-- Content Section -->
+    <div class="content">
+        <h1>Since I only have so much time I wanna make sure I talk to the right people. Please fill out the application and I'll review it personally.</h1>
+
+        <p>Ur current chance of approval is <strong>10%</strong></p>
+
+        <!-- Countdown -->
+        <div class="countdown" id="countdown"></div>
+
+        <!-- Buttons -->
+        <a href="#" class="button button-outline">Increase Approval Odds</a>
+        
+        <!-- Instagram Button with Icon -->
+        <a href="https://www.instagram.com/golfbabegrace" class="button button-instagram" target="_blank">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram">Instagram
+        </a>
+
+        <a href="#" class="button button-rosa" id="skipApprovalBtn">Skip approval</a>
+
+        <!-- Footer Text -->
+        <p class="small-text">only 1 of 3 spots left for today</p>
+    </div>
+
+    <!-- Panel Section -->
+    <div class="panel" id="approvalPanel">
+        <span class="close-btn" id="closePanel">&times;</span>
+        <img src="hourglass.png" alt="Hourglass" style="width: 50px; margin-bottom: 15px;">
+        <h2>Skip Approval</h2>
+        <h3>Skip the line & start chatting with me</h3>
+        <p>1 Month</p>
+        <p>$50</p>
+        <a href="#" class="button button-rosa">Continue</a>
+    </div>
+
+    <script>
+        // Countdown logic
+        const userTimestamp = localStorage.getItem('userVisitTimestamp');
+        const countdownDisplay = document.getElementById('countdown');
+        
+        if (!userTimestamp) {
+            const currentTime = new Date().getTime();
+            localStorage.setItem('userVisitTimestamp', currentTime);
+            startCountdown(24 * 60 * 60 * 1000);
+        } else {
+            const now = new Date().getTime();
+            const elapsedTime = now - userTimestamp;
+            const remainingTime = (24 * 60 * 60 * 1000) - elapsedTime;
+            
+            if (remainingTime <= 0) {
+                countdownDisplay.innerHTML = "Offer has expired!";
+            } else {
+                startCountdown(remainingTime);
+            }
+        }
+
+        function startCountdown(duration) {
+            let timer = duration, hours, minutes, seconds;
+
+            const countdownInterval = setInterval(function () {
+                hours = Math.floor(timer / (1000 * 60 * 60));
+                minutes = Math.floor((timer % (1000 * 60 * 60)) / (1000 * 60));
+                seconds = Math.floor((timer % (1000 * 60)) / 1000);
+                
+                countdownDisplay.innerHTML = hours + "h " + minutes + "m " + seconds + "s ";
+                
+                if (timer <= 0) {
+                    clearInterval(countdownInterval);
+                    countdownDisplay.innerHTML = "Offer has expired!";
+                }
+
+                timer -= 1000;
+            }, 1000);
+        }
+
+        // Show and hide panel
+        const skipApprovalBtn = document.getElementById('skipApprovalBtn');
+        const approvalPanel = document.getElementById('approvalPanel');
+        const closePanel = document.getElementById('closePanel');
+
+        skipApprovalBtn.addEventListener('click', function (event) {
+            event.preventDefault();
+            approvalPanel.classList.add('open'); // Show the panel
+        });
+
+        closePanel.addEventListener('click', function () {
+            approvalPanel.classList.remove('open'); // Hide the panel
+        });
+
+        // Close panel when clicking outside of it
+        approvalPanel.addEventListener('click', function (event) {
+            if (event.target === approvalPanel) {
+                approvalPanel.classList.remove('open'); // Hide the panel
+            }
+        });
+    </script>
+
+</body>
+</html>
